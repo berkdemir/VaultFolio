@@ -85,7 +85,11 @@ export function parseNote(rawContent: string, fallbackSlug: string): ParsedNote 
 function extractFrontmatter(content: string): NoteFrontmatter {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return {};
-  return parseYamlSimple(match[1]);
+  const fm = parseYamlSimple(match[1]);
+  if (Array.isArray(fm.tags)) {
+    fm.tags = fm.tags.map((t) => String(t).toLowerCase());
+  }
+  return fm;
 }
 
 function stripFrontmatter(content: string): string {
