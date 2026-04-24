@@ -21,7 +21,8 @@ interface TreeEntry {
 
 export async function deploySite(
   files: Map<string, string>,
-  config: DeployConfig
+  config: DeployConfig,
+  images?: Map<string, string> // deployPath → base64 content
 ): Promise<DeployResult> {
   if (!config.githubToken) {
     return { success: false, message: "GitHub token is required. Add it in VaultFolio settings." };
@@ -48,8 +49,14 @@ export async function deploySite(
     // Step 2: upload each file as a blob
     const entries: TreeEntry[] = [];
     for (const [path, content] of files) {
-      const sha = await createBlob(owner, repo, content, config.githubToken);
+      const sha = await createBlob(owner, repo, content, "utf-8", config.githubToken);
       entries.push({ path, mode: "100644", type: "blob", sha });
+    }
+    if (images) {
+      for (const [path, content] of images) {
+        const sha = await createBlob(owner, repo, content, "base64", config.githubToken);
+        entries.push({ path, mode: "100644", type: "blob", sha });
+      }
     }
 
     // Step 3: create a new tree containing all blobs
@@ -70,9 +77,10 @@ export async function deploySite(
     await updateRef(owner, repo, branch, newCommitSha, config.githubToken);
 
     const url = `https://${owner}.github.io/${repo}/`;
+    const total = files.size + (images?.size ?? 0);
     return {
       success: true,
-      message: `Deployed ${files.size} file(s). View at ${url}`,
+      message: `Deployed ${total} file(s). View at ${url}`,
       url,
     };
   } catch (err) {
@@ -142,13 +150,14 @@ async function createBlob(
   owner: string,
   repo: string,
   content: string,
+  encoding: "utf-8" | "base64",
   token: string
 ): Promise<string> {
   const data = await ghJson<{ sha: string }>(
     "POST",
     `/repos/${owner}/${repo}/git/blobs`,
     token,
-    { content, encoding: "utf-8" }
+    { content, encoding }
   );
   return data.sha;
 }

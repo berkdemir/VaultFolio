@@ -148,7 +148,7 @@ export class VaultFolioSidebarView extends ItemView {
 
         deployBtn.setText("Deploying…");
         new Notice("Deploying to GitHub…");
-        const result = await this.plugin.deployFiles(buildResult.files);
+        const result = await this.plugin.deployFiles(buildResult.files, buildResult.imageMap);
 
         if (result.success) {
           new Notice(`Deployed! View at ${result.url ?? result.message}`);

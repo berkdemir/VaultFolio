@@ -16,11 +16,17 @@ export interface ParsedNote {
   slug: string;
 }
 
+export interface ImageRef {
+  type: "wikilink" | "markdown";
+  path: string;
+}
+
 export interface PublishedNote {
   path: string;
   title: string;
   frontmatter: NoteFrontmatter;
   content: string;
+  imageRefs: ImageRef[];
 }
 
 export class Parser {
@@ -47,7 +53,7 @@ export class Parser {
           ? frontmatter.title.trim()
           : file.basename;
 
-      published.push({ path: file.path, title, frontmatter, content });
+      published.push({ path: file.path, title, frontmatter, content, imageRefs: extractImageRefs(content) });
     }
 
     return published;
@@ -126,6 +132,36 @@ function parseYamlSimple(yaml: string): NoteFrontmatter {
   }
 
   return result;
+}
+
+const IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp|svg)$/i;
+
+export function extractImageRefs(content: string): ImageRef[] {
+  const refs: ImageRef[] = [];
+  const seen = new Set<string>();
+
+  // Obsidian wikilink images: ![[image.png]] or ![[path/image.png|alias]]
+  const wikiRe = /!\[\[([^\]]+)\]\]/g;
+  let m: RegExpExecArray | null;
+  while ((m = wikiRe.exec(content)) !== null) {
+    const path = m[1].split("|")[0].trim();
+    if (IMAGE_EXT_RE.test(path) && !seen.has(path)) {
+      seen.add(path);
+      refs.push({ type: "wikilink", path });
+    }
+  }
+
+  // Standard markdown images: ![alt](./path/image.png) or ![alt](image.png "title")
+  const mdRe = /!\[[^\]]*\]\(([^)]+)\)/g;
+  while ((m = mdRe.exec(content)) !== null) {
+    const path = m[1].trim().split(/\s+/)[0];
+    if (!path.startsWith("http") && IMAGE_EXT_RE.test(path) && !seen.has(path)) {
+      seen.add(path);
+      refs.push({ type: "markdown", path });
+    }
+  }
+
+  return refs;
 }
 
 export function slugify(text: string): string {

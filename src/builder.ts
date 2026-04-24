@@ -8,6 +8,7 @@ export interface SiteFile {
 export interface BuildResult {
   files: SiteFile[];
   pageCount: number;
+  imageMap: Map<string, string>; // deployPath ("images/x.png") → vault path
 }
 
 export function buildSite(notes: ParsedNote[], siteTitle: string): BuildResult {
@@ -17,6 +18,7 @@ export function buildSite(notes: ParsedNote[], siteTitle: string): BuildResult {
   return {
     files: [index, ...pages],
     pageCount: pages.length,
+    imageMap: new Map(), // populated by main.ts after vault image resolution
   };
 }
 
@@ -38,7 +40,11 @@ function buildIndex(notes: ParsedNote[], siteTitle: string): SiteFile {
   const cards = notes
     .map((n) => {
       const title = (n.frontmatter.title as string | undefined) ?? n.slug;
-      const rawDesc = n.body.replace(/<[^>]*>/g, "").trim();
+      const rawDesc = n.body
+        .replace(/!\[\[[^\]]+\]\]/g, "")
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+        .replace(/<[^>]*>/g, "")
+        .trim();
       const desc = rawDesc.slice(0, 150) + (rawDesc.length > 150 ? "…" : "");
       const tags = Array.isArray(n.frontmatter.tags) ? (n.frontmatter.tags as string[]) : [];
       const tagChips = tags
@@ -159,6 +165,20 @@ function markdownToHtml(md: string): string {
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+    // Wikilink images: ![[image.png]] or ![[path/image.png|alias]] — must precede link regex
+    .replace(/!\[\[([^\]]+)\]\]/g, (_, ref) => {
+      const name = ref.split("|")[0].trim().split("/").pop() ?? ref;
+      return `<img src="../images/${encodeURIComponent(name)}" alt="${escapeHtml(name)}" />`;
+    })
+    // Markdown images: ![alt](src) — must precede link regex
+    .replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, (_, alt, src) => {
+      if (/^https?:\/\//.test(src)) {
+        return `<img src="${src}" alt="${escapeHtml(alt)}" />`;
+      }
+      const name = src.split("/").pop() ?? src;
+      return `<img src="../images/${encodeURIComponent(name)}" alt="${escapeHtml(alt)}" />`;
+    })
+    // Links — after images so [alt](src) inside ![alt](src) is already consumed
     .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
     .replace(/^---$/gm, "<hr>")
     .replace(/\n{2,}/g, "</p><p>")

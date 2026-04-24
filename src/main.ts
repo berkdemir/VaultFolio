@@ -1,7 +1,7 @@
 import { Notice, Plugin } from "obsidian";
 
 import { VaultFolioSettings, DEFAULT_SETTINGS } from "./settings";
-import { Parser, getPublishedNotes, parseNote } from "./parser";
+import { Parser, getPublishedNotes, parseNote, ImageRef } from "./parser";
 import { buildSite, BuildResult, SiteFile } from "./builder";
 import { deploySite, DeployResult } from "./deployer";
 import { VaultFolioSettingsTab } from "./ui/settingsTab";
@@ -82,7 +82,7 @@ export default class VaultFolioPlugin extends Plugin {
     const outputBase = this.settings.outputFolder.replace(/\/+$/, "");
     const adapter = this.app.vault.adapter;
 
-    for (const dir of [outputBase, `${outputBase}/pages`]) {
+    for (const dir of [outputBase, `${outputBase}/pages`, `${outputBase}/images`]) {
       if (!(await adapter.exists(dir))) {
         await adapter.mkdir(dir);
       }
@@ -92,20 +92,52 @@ export default class VaultFolioPlugin extends Plugin {
       await adapter.write(`${outputBase}/${file.path}`, file.content);
     }
 
+    // Resolve and copy images
+    const imageMap = new Map<string, string>(); // deployPath → vaultPath
+    for (const note of publishedNotes) {
+      for (const ref of note.imageRefs) {
+        const vaultPath = this.resolveImageRef(ref, note.path);
+        if (!vaultPath) continue;
+        const deployPath = `images/${vaultPath.split("/").pop() ?? vaultPath}`;
+        if (imageMap.has(deployPath)) continue; // first occurrence wins
+        imageMap.set(deployPath, vaultPath);
+        if (await adapter.exists(vaultPath)) {
+          const binary = await adapter.readBinary(vaultPath);
+          await adapter.writeBinary(`${outputBase}/${deployPath}`, binary);
+        }
+      }
+    }
+
+    result.imageMap = imageMap;
     return result;
   }
 
-  async deployFiles(files: SiteFile[]): Promise<DeployResult> {
+  async deployFiles(files: SiteFile[], imageMap?: Map<string, string>): Promise<DeployResult> {
     const filesMap = new Map<string, string>(files.map((f) => [f.path, f.content]));
-    return deploySite(filesMap, {
-      githubToken: this.settings.githubToken,
-      githubRepo: this.settings.githubRepo,
-    });
+
+    // Read and base64-encode images for GitHub API
+    const imageFiles = new Map<string, string>();
+    if (imageMap) {
+      for (const [deployPath, vaultPath] of imageMap) {
+        try {
+          const binary = await this.app.vault.adapter.readBinary(vaultPath);
+          imageFiles.set(deployPath, arrayBufferToBase64(binary));
+        } catch {
+          // skip unreadable images
+        }
+      }
+    }
+
+    return deploySite(
+      filesMap,
+      { githubToken: this.settings.githubToken, githubRepo: this.settings.githubRepo },
+      imageFiles
+    );
   }
 
   async deploy(): Promise<DeployResult> {
     const buildResult = await this.buildSite();
-    return this.deployFiles(buildResult.files);
+    return this.deployFiles(buildResult.files, buildResult.imageMap);
   }
 
   // ── Settings ──────────────────────────────────────────────────────────────
@@ -119,6 +151,17 @@ export default class VaultFolioPlugin extends Plugin {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+
+  private resolveImageRef(ref: ImageRef, notePath: string): string | null {
+    if (ref.type === "wikilink") {
+      const file = this.app.metadataCache.getFirstLinkpathDest(ref.path, notePath);
+      return file?.path ?? null;
+    }
+    // Markdown: resolve relative to the note's directory
+    const noteDir = notePath.includes("/") ? notePath.split("/").slice(0, -1).join("/") : "";
+    const clean = ref.path.replace(/^\.\//, "");
+    return noteDir ? `${noteDir}/${clean}` : clean;
+  }
 
   private async activateSidebar(): Promise<void> {
     const { workspace } = this.app;
@@ -135,4 +178,13 @@ export default class VaultFolioPlugin extends Plugin {
       workspace.revealLeaf(leaf);
     }
   }
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
