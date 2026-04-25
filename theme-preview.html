@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VaultFolio — Theme Preview</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Shell header ── */
+    .shell-header {
+      border-bottom: 1px solid #e5e5e5;
+      padding: 28px 40px 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .shell-logo {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+    .shell-logo span { color: #ff4d00; }
+    .shell-subtitle {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #1a1a1a;
+      margin-bottom: 24px;
+      line-height: 1.2;
+    }
+    .shell-subtitle small {
+      display: block;
+      font-size: 15px;
+      font-weight: 400;
+      color: #777;
+      margin-top: 4px;
+      letter-spacing: 0;
+    }
+
+    /* ── Switcher ── */
+    .switcher {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .switcher-btn {
+      padding: 8px 20px;
+      border-radius: 100px;
+      border: 1.5px solid #d0d0d0;
+      background: #ffffff;
+      color: #555;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      outline: none;
+    }
+    .switcher-btn:hover {
+      border-color: #1a1a1a;
+      color: #1a1a1a;
+    }
+    .switcher-btn.active {
+      background: #1a1a1a;
+      border-color: #1a1a1a;
+      color: #ffffff;
+    }
+
+    /* ── Preview ── */
+    .preview-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 40px;
+    }
+    .preview-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+    .preview-frame-wrap {
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+    .preview-bar {
+      background: #f0f0f0;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .preview-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+    .preview-dot:nth-child(1) { background: #ff5f57; }
+    .preview-dot:nth-child(2) { background: #febc2e; }
+    .preview-dot:nth-child(3) { background: #28c840; }
+    .preview-url {
+      margin-left: 8px;
+      background: #fff;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      padding: 3px 12px;
+      font-size: 12px;
+      color: #666;
+      flex: 1;
+      max-width: 300px;
+    }
+    #preview-frame {
+      width: 100%;
+      height: 680px;
+      border: none;
+      display: block;
+    }
+
+    /* ── CTA footer ── */
+    .shell-footer {
+      border-top: 1px solid #e5e5e5;
+      margin-top: 16px;
+      padding: 48px 40px;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+    .shell-footer h2 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 8px;
+    }
+    .shell-footer p {
+      font-size: 15px;
+      color: #666;
+      margin-bottom: 24px;
+    }
+    .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-size: 14px; font-weight: 500; font-family: inherit;
+      cursor: pointer; text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .cta-btn:hover { opacity: 0.8; }
+    .cta-btn-primary { background: #1a1a1a; color: #fff; border: none; }
+    .cta-btn-secondary { background: #fff; color: #1a1a1a; border: 1.5px solid #d0d0d0; }
+    .shell-made {
+      margin-top: 32px;
+      font-size: 12px;
+      color: #bbb;
+    }
+
+    @media (max-width: 640px) {
+      .shell-header, .preview-wrap, .shell-footer { padding-left: 20px; padding-right: 20px; }
+      .shell-subtitle { font-size: 22px; }
+      #preview-frame { height: 520px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell-header">
+  <div class="shell-logo">Vault<span>Folio</span></div>
+  <div class="shell-subtitle">
+    Choose your portfolio theme
+    <small>Live preview with sample portfolio data</small>
+  </div>
+  <div class="switcher">
+    <button class="switcher-btn" data-theme="simple">Simple</button>
+    <button class="switcher-btn" data-theme="apple">Apple</button>
+    <button class="switcher-btn" data-theme="editorial">Editorial</button>
+    <button class="switcher-btn active" data-theme="dark">Dark Cinematic</button>
+  </div>
+</div>
+
+<div class="preview-wrap">
+  <div class="preview-label">Preview</div>
+  <div class="preview-frame-wrap">
+    <div class="preview-bar">
+      <div class="preview-dot"></div>
+      <div class="preview-dot"></div>
+      <div class="preview-dot"></div>
+      <div class="preview-url">alexrivera.github.io/portfolio</div>
+    </div>
+    <iframe id="preview-frame" title="Theme Preview" sandbox="allow-same-origin"></iframe>
+  </div>
+</div>
+
+<div class="shell-footer">
+  <h2>Get started with VaultFolio</h2>
+  <p>Turn your Obsidian notes into a live portfolio — no coding required.</p>
+  <div class="cta-buttons">
+    <a href="https://github.com/thedozcompany/VaultFolio" target="_blank" class="cta-btn cta-btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      View on GitHub
+    </a>
+    <a href="https://github.com/thedozcompany/VaultFolio#installation" target="_blank" class="cta-btn cta-btn-secondary">
+      Install Guide →
+    </a>
+  </div>
+  <div class="shell-made">Made with Obsidian &amp; VaultFolio</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// Fake portfolio data
+// ─────────────────────────────────────────────────────────────────────────────
+const SITE_NAME = "Alex Rivera";
+const HERO_TITLE = "Alex Rivera";
+const HERO_SUBTITLE = "Brand Designer &amp; Developer crafting digital experiences with intention.";
+
+const PROJECTS = [
+  { num: "01", slug: "flux-rebrand",  title: "Flux Rebrand",  desc: "Complete visual identity redesign for a leading fintech company.", tags: ["branding", "fintech"],  year: "2026", color: "#1A1A2E", textLight: true  },
+  { num: "02", slug: "calm-app",      title: "Calm App",      desc: "Mobile app redesign focused on mindfulness and user wellness.",   tags: ["ui/ux", "mobile"],    year: "2025", color: "#16213E", textLight: true  },
+  { num: "03", slug: "nova-launch",   title: "Nova Launch",   desc: "Motion-driven product launch campaign with cinematic visuals.",   tags: ["motion", "product"],  year: "2025", color: "#0F3460", textLight: true  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Theme HTML generators
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── DARK CINEMATIC ────────────────────────────────────────────────────────────
+function darkHTML() {
+  const rows = PROJECTS.map(p => `
+<a href="#" class="vf-project-row">
+  <span class="vf-project-num">${p.num}</span>
+  <span class="vf-project-name">${p.title}</span>
+  <div class="vf-project-meta-right">
+    <span class="vf-project-year">${p.year}</span>
+    <div class="vf-project-tags-row">
+      ${p.tags.map(t => `<span class="vf-project-tag-pill">${t}</span>`).join("")}
+    </div>
+  </div>
+</a>`).join("\n");
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${SITE_NAME}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#0A0A0A;color:#fff;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.vf-nav{position:sticky;top:0;z-index:100;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 60px;background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.1)}
+.vf-nav-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#fff}
+.vf-nav-links{display:flex;gap:36px}
+.vf-nav-link{font-size:13px;color:rgba(255,255,255,0.7)}
+.vf-hero{height:420px;background:#0A0A0A;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden}
+.vf-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(255,77,0,0.08) 0%,transparent 70%);pointer-events:none}
+.vf-hero-inner{position:relative;z-index:1;padding:0 40px;max-width:1100px}
+.vf-hero-label{display:block;margin-bottom:24px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+.vf-hero-title{font-family:'Syne',sans-serif;font-size:clamp(48px,10vw,110px);font-weight:800;letter-spacing:-4px;line-height:0.9;color:#fff;margin-bottom:24px}
+.vf-hero-title em{font-style:italic;color:#FF4D00}
+.vf-hero-subtitle{font-size:16px;font-weight:300;color:rgba(255,255,255,0.5);line-height:1.7;max-width:480px;margin:0 auto}
+.vf-projects-section{background:#0A0A0A;padding:80px 60px;max-width:1400px;margin:0 auto}
+.vf-section-label{display:block;margin-bottom:48px;font-size:11px;letter-spacing:0.3em;text-transform:uppercase;color:rgba(255,255,255,0.3)}
+.vf-project-row{display:grid;grid-template-columns:60px 1fr auto;align-items:center;gap:40px;padding:32px 20px;border-top:1px solid rgba(255,255,255,0.1);text-decoration:none;color:#fff;transition:background 0.3s;border-radius:4px;margin:0 -20px}
+.vf-project-row:hover{background:rgba(255,255,255,0.03)}
+.vf-project-row:last-child{border-bottom:1px solid rgba(255,255,255,0.1)}
+.vf-project-num{font-family:'Syne',sans-serif;font-size:12px;color:rgba(255,255,255,0.2);letter-spacing:0.1em}
+.vf-project-name{font-family:'Syne',sans-serif;font-size:clamp(24px,4vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1;color:#fff;transition:color 0.3s}
+.vf-project-row:hover .vf-project-name{color:#FF4D00}
+.vf-project-meta-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+.vf-project-year{font-size:12px;color:rgba(255,255,255,0.3)}
+.vf-project-tags-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.vf-project-tag-pill{font-size:11px;color:rgba(255,255,255,0.6);padding:4px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:100px;white-space:nowrap}
+.vf-about{background:#111;padding:80px 60px}
+.vf-about-inner{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.vf-about-heading{font-family:'Syne',sans-serif;font-size:clamp(28px,3vw,48px);font-weight:700;color:#fff;line-height:1.1;letter-spacing:-1.5px;margin-bottom:16px}
+.vf-about-body{font-size:16px;font-weight:300;color:rgba(255,255,255,0.5);line-height:1.8}
+.vf-skills{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.vf-skill{font-size:12px;color:rgba(255,255,255,0.5);padding:6px 14px;border:1px solid rgba(255,255,255,0.12);border-radius:100px}
+.vf-footer{background:#0A0A0A;border-top:1px solid rgba(255,255,255,0.1);padding:36px 60px;display:flex;align-items:center;justify-content:space-between}
+.vf-footer-left{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:#fff}
+.vf-footer-right{font-size:12px;color:rgba(255,255,255,0.3)}
+.vf-footer-right a{color:#FF4D00}
+</style></head>
+<body>
+<nav class="vf-nav">
+  <span class="vf-nav-logo">Alex Rivera</span>
+  <div class="vf-nav-links">
+    <a href="#" class="vf-nav-link">Work</a>
+    <a href="#" class="vf-nav-link">About</a>
+    <a href="#" class="vf-nav-link">Contact</a>
+  </div>
+</nav>
+<section class="vf-hero">
+  <div class="vf-hero-inner">
+    <span class="vf-hero-label">Portfolio — 2026</span>
+    <h1 class="vf-hero-title">Alex <em>Rivera</em></h1>
+    <p class="vf-hero-subtitle">Brand Designer &amp; Developer crafting digital experiences with intention.</p>
+  </div>
+</section>
+<section id="work"><div class="vf-projects-section">
+  <span class="vf-section-label">Selected Work</span>
+  ${rows}
+</div></section>
+<section class="vf-about">
+  <div class="vf-about-inner">
+    <div>
+      <h2 class="vf-about-heading">Building things that matter.</h2>
+      <p class="vf-about-body">A multidisciplinary creator focused on craft, clarity, and impact.</p>
+      <div class="vf-skills">
+        <span class="vf-skill">Branding</span><span class="vf-skill">UI/UX</span>
+        <span class="vf-skill">Motion</span><span class="vf-skill">Product</span>
+      </div>
+    </div>
+    <div></div>
+  </div>
+</section>
+<footer class="vf-footer">
+  <span class="vf-footer-left">Alex Rivera</span>
+  <span class="vf-footer-right">Built with <a href="#">VaultFolio</a></span>
+</footer>
+</body></html>`;
+}
+
+// ── APPLE ─────────────────────────────────────────────────────────────────────
+function appleHTML() {
+  const cards = PROJECTS.map(p => `
+<a href="#" class="vf-card-ap" style="text-decoration:none">
+  <div class="vf-card-ap-title">${p.title}</div>
+  <div class="vf-card-ap-desc">${p.desc}</div>
+  <div class="vf-card-ap-tags">
+    ${p.tags.map(t => `<span class="vf-tag-ap">${t}</span>`).join("")}
+  </div>
+  <div class="vf-card-ap-link">Learn more &gt;</div>
+</a>`).join("\n");
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${SITE_NAME}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#f5f5f7;color:#1d1d1f;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.vf-nav-ap{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.72);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;padding:0 40px;height:52px}
+.vf-nav-ap-logo{font-weight:600;font-size:17px;letter-spacing:-0.01em;color:#1d1d1f}
+.vf-nav-ap-links{display:flex;gap:24px}
+.vf-nav-ap-link{font-size:14px;color:#0066cc}
+.vf-hero-ap{text-align:center;padding:100px 40px 60px;max-width:980px;margin:0 auto}
+.vf-hero-ap-title{font-size:clamp(40px,7vw,72px);font-weight:700;letter-spacing:-0.015em;line-height:1.05;color:#1d1d1f;margin-bottom:20px}
+.vf-hero-ap-subtitle{font-size:21px;font-weight:400;color:#86868b;line-height:1.33;letter-spacing:.009em;max-width:600px;margin:0 auto}
+.vf-projects-ap{padding:20px 40px 60px;max-width:1200px;margin:0 auto}
+.vf-projects-ap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+.vf-card-ap{background:#fff;border-radius:18px;padding:36px;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 24px rgba(0,0,0,0.04)}
+.vf-card-ap:hover{transform:scale(1.02);box-shadow:0 12px 48px rgba(0,0,0,0.08)}
+.vf-card-ap-title{font-size:26px;font-weight:600;letter-spacing:.004em;color:#1d1d1f;margin-bottom:10px}
+.vf-card-ap-desc{font-size:16px;color:#86868b;margin-bottom:20px;line-height:1.47}
+.vf-card-ap-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.vf-tag-ap{background:#f5f5f7;color:#1d1d1f;font-size:12px;font-weight:500;padding:4px 12px;border-radius:100px}
+.vf-card-ap-link{margin-top:auto;color:#0066cc;font-size:16px}
+.vf-quote-ap{text-align:center;padding:80px 40px;max-width:800px;margin:0 auto}
+.vf-quote-ap p{font-size:28px;font-weight:600;color:#1d1d1f;line-height:1.25}
+.vf-footer-ap{border-top:1px solid #d2d2d7;padding:28px 40px;text-align:center;font-size:12px;color:#86868b;max-width:980px;margin:0 auto}
+</style></head>
+<body>
+<nav class="vf-nav-ap">
+  <div class="vf-nav-ap-logo">${SITE_NAME}</div>
+  <div class="vf-nav-ap-links">
+    <a href="#" class="vf-nav-ap-link">Work</a>
+    <a href="#" class="vf-nav-ap-link">About</a>
+  </div>
+</nav>
+<header class="vf-hero-ap">
+  <h1 class="vf-hero-ap-title">Brand Designer &amp;<br>Developer</h1>
+  <p class="vf-hero-ap-subtitle">Crafting digital experiences with precision and care.</p>
+</header>
+<section class="vf-projects-ap">
+  <div class="vf-projects-ap-grid">${cards}</div>
+</section>
+<section class="vf-quote-ap">
+  <p>Design is not just what it looks like — it's how it works.</p>
+</section>
+<footer class="vf-footer-ap">
+  Copyright &copy; 2026 ${SITE_NAME}. All rights reserved. Built with VaultFolio.
+</footer>
+</body></html>`;
+}
+
+// ── EDITORIAL ────────────────────────────────────────────────────────────────
+function editorialHTML() {
+  const ED_COLORS = ["#F5F4EF","#E8E4DC","#1A1A1A","#F0EBE0"];
+  const cards = PROJECTS.map((p, i) => {
+    const bg = ED_COLORS[i % ED_COLORS.length];
+    const tc = bg === "#1A1A1A" ? "#FFFFFF" : "#0A0A0A";
+    const isFull = i % 3 === 0;
+    return `<a href="#" class="vf-card-ed${isFull ? " full" : ""}" style="text-decoration:none">
+  <div class="vf-card-ed-header" style="background:${bg};color:${tc}">
+    <div class="vf-card-ed-num">NO. ${p.num}</div>
+    <div class="vf-card-ed-title">${p.title}</div>
+    <div class="vf-card-ed-desc">${p.desc}</div>
+    <div class="vf-card-ed-tags">${p.tags.join(" · ").toUpperCase()}</div>
+    <div class="vf-card-ed-link" style="border-bottom:1px solid ${tc}">Read more →</div>
+  </div>
+</a>`;
+  }).join("\n");
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${SITE_NAME}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#fff;color:#0A0A0A;font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.vf-nav-ed{background:#fff;border-top:4px solid #0A0A0A;border-bottom:1px solid #0A0A0A;padding:16px 40px;display:flex;justify-content:space-between;align-items:center}
+.vf-nav-ed-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#0A0A0A}
+.vf-nav-ed-left,.vf-nav-ed-right{font-size:13px;font-variant:small-caps;color:#555}
+.vf-hero-ed{background:#fff;padding:60px 40px 32px}
+.vf-hero-ed-title{font-family:'Playfair Display',serif;font-size:clamp(40px,9vw,100px);font-weight:900;letter-spacing:-3px;line-height:0.9;color:#0A0A0A}
+.vf-hero-ed-divider{border-bottom:3px solid #0A0A0A;margin:32px 0}
+.vf-hero-ed-cols{display:flex;gap:40px;justify-content:space-between;align-items:flex-start}
+.vf-hero-ed-bio{font-family:'Playfair Display',serif;font-style:italic;font-size:20px;max-width:560px;line-height:1.4}
+.vf-hero-ed-stats{display:flex;gap:40px;flex-shrink:0}
+.vf-hero-ed-stat{display:flex;flex-direction:column}
+.vf-hero-ed-stat-val{font-family:'Playfair Display',serif;font-size:28px;font-weight:700}
+.vf-hero-ed-stat-lbl{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#555;margin-top:2px}
+.vf-projects-ed{padding:60px 40px;max-width:1200px;margin:0 auto}
+.vf-projects-ed-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#0A0A0A;border:1px solid #0A0A0A}
+.vf-card-ed{background:#fff;display:flex;flex-direction:column;text-decoration:none;color:#0A0A0A}
+.vf-card-ed.full{grid-column:1/-1}
+.vf-card-ed-header{padding:36px;min-height:240px;display:flex;flex-direction:column}
+.vf-card-ed-num{font-size:13px;margin-bottom:auto;opacity:0.5}
+.vf-card-ed-title{font-family:'Playfair Display',serif;font-weight:700;font-size:28px;margin-bottom:12px}
+.vf-card-ed-desc{font-size:14px;margin-bottom:16px;opacity:0.8;line-height:1.5}
+.vf-card-ed-tags{text-transform:uppercase;letter-spacing:0.1em;font-size:11px;margin-bottom:20px;opacity:0.6}
+.vf-card-ed-link{font-weight:700;font-size:13px;padding-bottom:2px;align-self:flex-start;display:inline-block}
+.vf-quote-ed{background:#0A0A0A;padding:64px 40px;text-align:center}
+.vf-quote-ed-text{font-family:'Playfair Display',serif;font-size:clamp(22px,3.5vw,44px);font-style:italic;color:#fff}
+.vf-footer-ed{border-top:4px solid #0A0A0A;background:#fff;padding:60px 40px 32px}
+.vf-footer-ed-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:40px;margin-bottom:60px;font-size:14px;color:#555;max-width:1200px;margin:0 auto 48px}
+.vf-footer-ed-cols strong{display:block;color:#0A0A0A;margin-bottom:8px;font-family:'Playfair Display',serif}
+.vf-footer-ed-bottom{text-align:center;font-size:11px;color:#999}
+</style></head>
+<body>
+<nav class="vf-nav-ed">
+  <div class="vf-nav-ed-left">April 2026</div>
+  <div class="vf-nav-ed-logo">${SITE_NAME}</div>
+  <div class="vf-nav-ed-right">Vol. 1</div>
+</nav>
+<section class="vf-hero-ed">
+  <h1 class="vf-hero-ed-title">${SITE_NAME}</h1>
+  <div class="vf-hero-ed-divider"></div>
+  <div class="vf-hero-ed-cols">
+    <div class="vf-hero-ed-bio">Brand Designer &amp; Developer crafting digital experiences with intention.</div>
+    <div class="vf-hero-ed-stats">
+      <div class="vf-hero-ed-stat"><span class="vf-hero-ed-stat-val">3</span><span class="vf-hero-ed-stat-lbl">Projects</span></div>
+      <div class="vf-hero-ed-stat"><span class="vf-hero-ed-stat-val">10+</span><span class="vf-hero-ed-stat-lbl">Years</span></div>
+    </div>
+  </div>
+</section>
+<section class="vf-projects-ed">
+  <div class="vf-projects-ed-grid">${cards}</div>
+</section>
+<section class="vf-quote-ed">
+  <p class="vf-quote-ed-text">"Design is the silent ambassador of your brand."</p>
+</section>
+<footer class="vf-footer-ed">
+  <div class="vf-footer-ed-cols">
+    <div><strong>About</strong>Crafting digital experiences with precision and a relentless eye for detail.</div>
+    <div><strong>Links</strong>Instagram<br>Twitter<br>LinkedIn</div>
+    <div><strong>Contact</strong>hello@alexrivera.co</div>
+  </div>
+  <div class="vf-footer-ed-bottom">Published with VaultFolio</div>
+</footer>
+</body></html>`;
+}
+
+// ── SIMPLE ────────────────────────────────────────────────────────────────────
+function simpleHTML() {
+  const cards = PROJECTS.map(p => `
+<a href="#" class="sp-card" style="text-decoration:none">
+  <div class="sp-card-title">${p.title}</div>
+  <div class="sp-card-desc">${p.desc}</div>
+  <div class="sp-card-tags">
+    ${p.tags.map(t => `<span class="sp-tag">${t}</span>`).join("")}
+  </div>
+</a>`).join("\n");
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>${SITE_NAME}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#fff;color:#1a1a1a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.6}
+a{color:#1a1a1a;text-decoration:none}
+.sp-nav{padding:20px 40px;border-bottom:1px solid #eee}
+.sp-nav-logo{font-size:16px;font-weight:600}
+.sp-hero{padding:60px 40px 48px;max-width:800px;margin:0 auto}
+.sp-hero h1{font-size:32px;font-weight:700;margin-bottom:10px}
+.sp-hero p{font-size:16px;color:#555}
+.sp-section{max-width:800px;margin:0 auto;padding:0 40px 60px}
+.sp-section-heading{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#999;margin-bottom:20px}
+.sp-cards{display:flex;flex-direction:column;gap:16px}
+.sp-card{border:1px solid #eee;padding:24px;color:#1a1a1a;display:block}
+.sp-card-title{font-size:18px;font-weight:600;margin-bottom:6px}
+.sp-card-desc{font-size:14px;color:#555;margin-bottom:12px}
+.sp-card-tags{display:flex;flex-wrap:wrap;gap:6px}
+.sp-tag{font-size:12px;color:#777;padding:2px 8px;border:1px solid #ddd}
+.sp-footer{border-top:1px solid #eee;padding:28px 40px;text-align:center;font-size:13px;color:#999}
+</style></head>
+<body>
+<nav class="sp-nav">
+  <span class="sp-nav-logo">${SITE_NAME}</span>
+</nav>
+<section class="sp-hero">
+  <h1>${SITE_NAME}</h1>
+  <p>Brand Designer &amp; Developer. A collection of selected work.</p>
+</section>
+<section class="sp-section">
+  <div class="sp-section-heading">Work</div>
+  <div class="sp-cards">${cards}</div>
+</section>
+<footer class="sp-footer">${SITE_NAME} &mdash; Built with VaultFolio</footer>
+</body></html>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Switcher logic
+// ─────────────────────────────────────────────────────────────────────────────
+const themeMap = {
+  dark:       darkHTML,
+  apple:      appleHTML,
+  editorial:  editorialHTML,
+  simple:     simpleHTML,
+};
+
+const frame = document.getElementById("preview-frame");
+const buttons = document.querySelectorAll(".switcher-btn");
+
+function setTheme(name) {
+  const fn = themeMap[name];
+  if (!fn) return;
+  frame.srcdoc = fn();
+  buttons.forEach(b => b.classList.toggle("active", b.dataset.theme === name));
+}
+
+buttons.forEach(btn => {
+  btn.addEventListener("click", () => setTheme(btn.dataset.theme));
+});
+
+// Load default
+setTheme("dark");
+</script>
+
+</body>
+</html>
