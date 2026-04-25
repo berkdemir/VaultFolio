@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, PluginSettingTab, Setting } from "obsidian";
 import type VaultFolioPlugin from "../main";
 
 export class VaultFolioSettingsTab extends PluginSettingTab {
@@ -20,7 +20,7 @@ export class VaultFolioSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Site name")
-      .setDesc("Displayed as the portfolio heading.")
+      .setDesc("Displayed as your portfolio heading.")
       .addText((text) =>
         text
           .setPlaceholder("My Portfolio")
@@ -33,7 +33,7 @@ export class VaultFolioSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Portfolio folder")
-      .setDesc("Vault folder containing notes to publish.")
+      .setDesc("Folder in your vault containing notes to publish.")
       .addText((text) =>
         text
           .setPlaceholder("portfolio")
@@ -46,7 +46,7 @@ export class VaultFolioSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Output folder")
-      .setDesc("Vault folder where the generated site files will be written.")
+      .setDesc("Local folder where HTML files are written.")
       .addText((text) =>
         text
           .setPlaceholder("_site")
@@ -59,7 +59,7 @@ export class VaultFolioSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Theme")
-      .setDesc("Visual theme for the generated site.")
+      .setDesc("Visual style for your generated site.")
       .addDropdown((drop) =>
         drop
           .addOption("default", "Dark Cinematic (Default)")
@@ -73,6 +73,14 @@ export class VaultFolioSettingsTab extends PluginSettingTab {
             await this.plugin.saveSettings();
           })
       );
+
+    const previewLink = containerEl.createEl("a", { text: "Preview all themes →" });
+    previewLink.style.cssText =
+      "color: #7C3AED; font-size: 12px; cursor: pointer; display: inline-block; margin: -0.5rem 0 1rem 0; padding: 0 1rem; text-decoration: none;";
+    previewLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.open("https://thedozcompany.github.io/vaultfolio-portfolio/theme-preview.html", "_blank");
+    });
 
     // --- Site Content section ---
     containerEl.createEl("h3", { text: "Site Content" });
@@ -147,7 +155,7 @@ export class VaultFolioSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("GitHub repository")
-      .setDesc("In owner/repo format, e.g. santhosh/portfolio.")
+      .setDesc("Format: username/repository-name")
       .addText((text) =>
         text
           .setPlaceholder("owner/repo")
@@ -160,7 +168,7 @@ export class VaultFolioSettingsTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("GitHub token")
-      .setDesc("Personal access token with repo write permission. Stored locally.")
+      .setDesc("Classic token with repo scope. Never shared outside your machine.")
       .addText((text) => {
         text
           .setPlaceholder("ghp_...")
@@ -171,5 +179,27 @@ export class VaultFolioSettingsTab extends PluginSettingTab {
           });
         text.inputEl.type = "password";
       });
+
+    const tokenWarning = containerEl.createEl("p", {
+      text: "⚠️ Use a classic token with repo scope only. Fine-grained tokens are not supported.",
+    });
+    tokenWarning.style.cssText =
+      "color: #FF4D00; font-size: 0.8rem; margin: -0.5rem 0 1.5rem 0; padding: 0 1rem; line-height: 1.5;";
+
+    // --- Save button ---
+    const saveSeparator = containerEl.createDiv();
+    saveSeparator.style.cssText =
+      "border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 20px;";
+
+    const saveBtn = saveSeparator.createEl("button", { text: "Save Settings" });
+    saveBtn.style.cssText =
+      "background: #7C3AED; color: white; border: 1px solid #5B21B6; border-radius: 6px; padding: 10px 5px; font-size: 13px; font-weight: 500; cursor: pointer;  display: flex;  letter-spacing: 0.02em; transition: background 0.15s ease;";
+
+    saveBtn.addEventListener("mouseenter", () => { saveBtn.style.background = "#5B21B6"; });
+    saveBtn.addEventListener("mouseleave", () => { saveBtn.style.background = "#7C3AED"; });
+    saveBtn.addEventListener("click", async () => {
+      await this.plugin.saveSettings();
+      new Notice("✅ Settings saved.");
+    });
   }
 }

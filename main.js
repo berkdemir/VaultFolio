@@ -1347,7 +1347,7 @@ body.vf-apple {
   background: #f5f5f7; color: #1d1d1f; font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 100px;
 }
 .vf-card-ap-link {
-  margin-top: auto; color: #0066cc; font-size: 17px; font-weight: 400;
+  margin-top: auto; color: #7C3AED; font-size: 17px; font-weight: 400;
 }
 .vf-card-ap-link:hover { text-decoration: underline; }
 
@@ -1387,7 +1387,7 @@ body.vf-apple {
 }
 .vf-prose-ap h2 { font-size: 32px; }
 .vf-prose-ap h3 { font-size: 24px; }
-.vf-prose-ap a { color: #0066cc; text-decoration: none; }
+.vf-prose-ap a { color: #7C3AED; text-decoration: none; }
 .vf-prose-ap a:hover { text-decoration: underline; }
 .vf-prose-ap pre, .vf-prose-ap code {
   background: #f5f5f7; color: #1d1d1f; border-radius: 8px; font-family: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro", "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
@@ -1404,7 +1404,7 @@ body.vf-apple {
 .vf-prose-ap hr { border: none; border-top: 1px solid #d2d2d7; margin: 3rem 0; }
 
 .vf-back-ap {
-  position: absolute; top: 16px; left: 40px; color: #0066cc; font-size: 14px; font-weight: 400; z-index: 200; display: flex; align-items: center;
+  position: absolute; top: 16px; left: 40px; color: #7C3AED; font-size: 14px; font-weight: 400; z-index: 200; display: flex; align-items: center;
 }
 .vf-back-ap:hover { text-decoration: underline; }
 ${CALLOUT_CSS}
@@ -1454,7 +1454,7 @@ function buildAppleIndex(notes, settings) {
     const fullHref = normalizeNavHref(rawHref);
     const isExternal = /^https?:\/\//.test(fullHref);
     const targetAttr = isExternal ? ` target="_blank" rel="noopener noreferrer"` : "";
-    return `<a href="${escapeHtml(fullHref)}" style="color:#0066cc; font-size:14px; font-weight:400;"${targetAttr}>${escapeHtml(label)}</a>`;
+    return `<a href="${escapeHtml(fullHref)}" style="color:#7C3AED; font-size:14px; font-weight:400;"${targetAttr}>${escapeHtml(label)}</a>`;
   }).filter(Boolean).join("\n    ")}
   </div>
 </nav>
@@ -2188,30 +2188,36 @@ var VaultFolioSettingsTab = class extends import_obsidian.PluginSettingTab {
     containerEl.empty();
     containerEl.createEl("h2", { text: "VaultFolio Settings" });
     containerEl.createEl("h3", { text: "Site" });
-    new import_obsidian.Setting(containerEl).setName("Site name").setDesc("Displayed as the portfolio heading.").addText(
+    new import_obsidian.Setting(containerEl).setName("Site name").setDesc("Displayed as your portfolio heading.").addText(
       (text) => text.setPlaceholder("My Portfolio").setValue(this.plugin.settings.siteName).onChange(async (value) => {
         this.plugin.settings.siteName = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Portfolio folder").setDesc("Vault folder containing notes to publish.").addText(
+    new import_obsidian.Setting(containerEl).setName("Portfolio folder").setDesc("Folder in your vault containing notes to publish.").addText(
       (text) => text.setPlaceholder("portfolio").setValue(this.plugin.settings.portfolioFolder).onChange(async (value) => {
         this.plugin.settings.portfolioFolder = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Output folder").setDesc("Vault folder where the generated site files will be written.").addText(
+    new import_obsidian.Setting(containerEl).setName("Output folder").setDesc("Local folder where HTML files are written.").addText(
       (text) => text.setPlaceholder("_site").setValue(this.plugin.settings.outputFolder).onChange(async (value) => {
         this.plugin.settings.outputFolder = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("Theme").setDesc("Visual theme for the generated site.").addDropdown(
+    new import_obsidian.Setting(containerEl).setName("Theme").setDesc("Visual style for your generated site.").addDropdown(
       (drop) => drop.addOption("default", "Dark Cinematic (Default)").addOption("editorial", "Editorial").addOption("apple", "Apple Minimalist").addOption("swiss", "Minimal Swiss").addOption("simple", "Simple").setValue(this.plugin.settings.theme).onChange(async (value) => {
         this.plugin.settings.theme = value;
         await this.plugin.saveSettings();
       })
     );
+    const previewLink = containerEl.createEl("a", { text: "Preview all themes \u2192" });
+    previewLink.style.cssText = "color: #7C3AED; font-size: 12px; cursor: pointer; display: inline-block; margin: -0.5rem 0 1rem 0; padding: 0 1rem; text-decoration: none;";
+    previewLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.open("https://thedozcompany.github.io/vaultfolio-portfolio/theme-preview.html", "_blank");
+    });
     containerEl.createEl("h3", { text: "Site Content" });
     new import_obsidian.Setting(containerEl).setName("Nav Menu Links").setDesc("Format: 'Label: URL, Label: URL' (e.g. 'Work: #work, About: #about')").addTextArea(
       (text) => text.setPlaceholder("Work: #work, GitHub: https://github.com/...").setValue(this.plugin.settings.navLinks).onChange(async (value) => {
@@ -2244,18 +2250,36 @@ var VaultFolioSettingsTab = class extends import_obsidian.PluginSettingTab {
       })
     );
     containerEl.createEl("h3", { text: "GitHub Deploy" });
-    new import_obsidian.Setting(containerEl).setName("GitHub repository").setDesc("In owner/repo format, e.g. santhosh/portfolio.").addText(
+    new import_obsidian.Setting(containerEl).setName("GitHub repository").setDesc("Format: username/repository-name").addText(
       (text) => text.setPlaceholder("owner/repo").setValue(this.plugin.settings.githubRepo).onChange(async (value) => {
         this.plugin.settings.githubRepo = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian.Setting(containerEl).setName("GitHub token").setDesc("Personal access token with repo write permission. Stored locally.").addText((text) => {
+    new import_obsidian.Setting(containerEl).setName("GitHub token").setDesc("Classic token with repo scope. Never shared outside your machine.").addText((text) => {
       text.setPlaceholder("ghp_...").setValue(this.plugin.settings.githubToken).onChange(async (value) => {
         this.plugin.settings.githubToken = value;
         await this.plugin.saveSettings();
       });
       text.inputEl.type = "password";
+    });
+    const tokenWarning = containerEl.createEl("p", {
+      text: "\u26A0\uFE0F Use a classic token with repo scope only. Fine-grained tokens are not supported."
+    });
+    tokenWarning.style.cssText = "color: #FF4D00; font-size: 0.8rem; margin: -0.5rem 0 1.5rem 0; padding: 0 1rem; line-height: 1.5;";
+    const saveSeparator = containerEl.createDiv();
+    saveSeparator.style.cssText = "border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; margin-top: 20px;";
+    const saveBtn = saveSeparator.createEl("button", { text: "Save Settings" });
+    saveBtn.style.cssText = "background: #7C3AED; color: white; border: 1px solid #5B21B6; border-radius: 6px; padding: 10px 5px; font-size: 13px; font-weight: 500; cursor: pointer;  display: flex;  letter-spacing: 0.02em; transition: background 0.15s ease;";
+    saveBtn.addEventListener("mouseenter", () => {
+      saveBtn.style.background = "#5B21B6";
+    });
+    saveBtn.addEventListener("mouseleave", () => {
+      saveBtn.style.background = "#7C3AED";
+    });
+    saveBtn.addEventListener("click", async () => {
+      await this.plugin.saveSettings();
+      new import_obsidian.Notice("\u2705 Settings saved.");
     });
   }
 };
@@ -2267,6 +2291,7 @@ var VaultFolioSidebarView = class extends import_obsidian2.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.notes = [];
+    this.isLoading = false;
     this.plugin = plugin;
   }
   getViewType() {
@@ -2279,13 +2304,17 @@ var VaultFolioSidebarView = class extends import_obsidian2.ItemView {
     return "layout";
   }
   async onOpen() {
+    this.isLoading = true;
+    this.render();
     await this.refresh(false);
   }
   async onClose() {
   }
   // ── Data ──────────────────────────────────────────────────────────────────
   async refresh(notify) {
+    this.isLoading = true;
     this.notes = await this.plugin.parser.getPublishedNotes();
+    this.isLoading = false;
     this.render();
     if (notify) {
       new import_obsidian2.Notice(`Refreshed. ${this.notes.length} note${this.notes.length === 1 ? "" : "s"} found.`);
@@ -2302,7 +2331,8 @@ var VaultFolioSidebarView = class extends import_obsidian2.ItemView {
   }
   renderHeader(root) {
     const header = root.createDiv({ cls: "vaultfolio-header" });
-    header.createEl("span", { text: "VaultFolio", cls: "vaultfolio-title" });
+    const titleEl = header.createEl("span", { cls: "vaultfolio-title" });
+    titleEl.innerHTML = 'VAULT<span style="color:#FF4D00">FOLIO</span>';
     const refreshBtn = header.createEl("button", {
       cls: "vaultfolio-icon-btn",
       attr: { "aria-label": "Refresh notes" }
@@ -2317,13 +2347,27 @@ var VaultFolioSidebarView = class extends import_obsidian2.ItemView {
       await this.refresh(true);
       refreshBtn.removeClass("vaultfolio-spinning");
     });
+    if (!this.isLoading) {
+      const statsRow = root.createDiv({ cls: "vaultfolio-stats-row" });
+      statsRow.createSpan({
+        cls: "vaultfolio-note-count-badge",
+        text: `${this.notes.length} published`
+      });
+    }
   }
   renderNoteList(root) {
     const container = root.createDiv({ cls: "vaultfolio-note-list" });
+    if (this.isLoading) {
+      container.createDiv({ cls: "vaultfolio-loading", text: "Scanning vault\u2026" });
+      return;
+    }
     if (this.notes.length === 0) {
-      container.createDiv({
-        cls: "vaultfolio-empty",
-        text: "No published notes found. Add published: true to any note in your portfolio folder."
+      const empty = container.createDiv({ cls: "vaultfolio-empty" });
+      empty.createDiv({ cls: "vaultfolio-empty-icon", text: "\u{1F4DD}" });
+      empty.createDiv({ cls: "vaultfolio-empty-title", text: "No published notes yet" });
+      empty.createDiv({
+        cls: "vaultfolio-empty-sub",
+        text: "Add published: true to any note in your portfolio folder"
       });
       return;
     }
@@ -2342,7 +2386,7 @@ var VaultFolioSidebarView = class extends import_obsidian2.ItemView {
     if (Array.isArray(tags) && tags.length > 0) {
       const tagRow = card.createDiv({ cls: "vaultfolio-tag-row" });
       for (const tag of tags) {
-        tagRow.createSpan({ cls: "vaultfolio-tag", text: String(tag) });
+        tagRow.createSpan({ cls: "vaultfolio-tag", text: String(tag).toLowerCase() });
       }
     }
   }
@@ -2358,35 +2402,53 @@ var VaultFolioSidebarView = class extends import_obsidian2.ItemView {
     });
     buildBtn.addEventListener("click", async () => {
       buildBtn.disabled = true;
+      deployBtn.disabled = true;
       buildBtn.setText("Building\u2026");
       try {
         const result = await this.plugin.buildSite();
-        new import_obsidian2.Notice(`Site built. ${result.pageCount} page${result.pageCount === 1 ? "" : "s"} generated.`);
+        new import_obsidian2.Notice(
+          `\u2705 Site built successfully \u2014 ${result.pageCount} page${result.pageCount === 1 ? "" : "s"} generated`
+        );
       } catch (err) {
-        new import_obsidian2.Notice(`VaultFolio build error: ${err instanceof Error ? err.message : String(err)}`);
+        new import_obsidian2.Notice(
+          `\u274C Build failed \u2014 ${err instanceof Error ? err.message : "check your portfolio folder"}`
+        );
       } finally {
         buildBtn.disabled = false;
+        deployBtn.disabled = false;
         buildBtn.setText("Build Site");
       }
     });
     deployBtn.addEventListener("click", async () => {
       var _a;
+      buildBtn.disabled = true;
       deployBtn.disabled = true;
       try {
         deployBtn.setText("Building\u2026");
-        new import_obsidian2.Notice("Building site\u2026");
         const buildResult = await this.plugin.buildSite();
         deployBtn.setText("Deploying\u2026");
-        new import_obsidian2.Notice("Deploying to GitHub\u2026");
         const result = await this.plugin.deployFiles(buildResult.files, buildResult.imageMap);
         if (result.success) {
-          new import_obsidian2.Notice(`Deployed! View at ${(_a = result.url) != null ? _a : result.message}`);
+          new import_obsidian2.Notice(`\u{1F680} Deployed! Visit: ${(_a = result.url) != null ? _a : result.message}`);
         } else {
-          new import_obsidian2.Notice(`Deploy failed: ${result.message}`);
+          const msg = result.message;
+          if (msg.includes("Invalid GitHub token") || msg.includes("401")) {
+            new import_obsidian2.Notice("\u274C Invalid GitHub token \u2014 regenerate in GitHub settings");
+          } else {
+            new import_obsidian2.Notice("\u274C Deploy failed \u2014 check your GitHub token and repo");
+          }
         }
       } catch (err) {
-        new import_obsidian2.Notice(`VaultFolio error: ${err instanceof Error ? err.message : String(err)}`);
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.toLowerCase().includes("fetch") || msg.toLowerCase().includes("network")) {
+          new import_obsidian2.Notice("\u274C Network error \u2014 check your connection");
+        } else if (msg.includes("token") || msg.includes("401")) {
+          new import_obsidian2.Notice("\u274C Invalid GitHub token \u2014 regenerate in GitHub settings");
+        } else {
+          new import_obsidian2.Notice(`\u274C Deploy failed \u2014 ${msg}`);
+        }
       } finally {
+        buildBtn.disabled = false;
         deployBtn.disabled = false;
         deployBtn.setText("Deploy to GitHub");
       }
@@ -2418,19 +2480,49 @@ var VaultFolioPlugin = class extends import_obsidian3.Plugin {
       id: "build-site",
       name: "Build site",
       callback: async () => {
-        const result = await this.buildSite();
-        new import_obsidian3.Notice(`VaultFolio: built ${result.pageCount} page(s).`);
+        try {
+          const result = await this.buildSite();
+          new import_obsidian3.Notice(
+            `\u2705 Site built successfully \u2014 ${result.pageCount} page${result.pageCount === 1 ? "" : "s"} generated`
+          );
+        } catch (err) {
+          new import_obsidian3.Notice(
+            `\u274C Build failed \u2014 ${err instanceof Error ? err.message : "check your portfolio folder"}`
+          );
+        }
       }
     });
     this.addCommand({
       id: "deploy-site",
       name: "Deploy to GitHub Pages",
       callback: async () => {
-        const result = await this.deploy();
-        new import_obsidian3.Notice(`VaultFolio: ${result.message}`);
+        var _a;
+        try {
+          const result = await this.deploy();
+          if (result.success) {
+            new import_obsidian3.Notice(`\u{1F680} Deployed! Visit: ${(_a = result.url) != null ? _a : result.message}`);
+          } else {
+            const msg = result.message;
+            if (msg.includes("Invalid GitHub token") || msg.includes("401")) {
+              new import_obsidian3.Notice("\u274C Invalid GitHub token \u2014 regenerate in GitHub settings");
+            } else {
+              new import_obsidian3.Notice("\u274C Deploy failed \u2014 check your GitHub token and repo");
+            }
+          }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg.toLowerCase().includes("fetch") || msg.toLowerCase().includes("network")) {
+            new import_obsidian3.Notice("\u274C Network error \u2014 check your connection");
+          } else {
+            new import_obsidian3.Notice(`\u274C Deploy failed \u2014 ${msg}`);
+          }
+        }
       }
     });
     this.app.workspace.onLayoutReady(async () => {
+      if (!this.settings.githubRepo) {
+        new import_obsidian3.Notice("\u{1F44B} Welcome to VaultFolio! Go to Settings \u2192 VaultFolio to get started.");
+      }
       const notes = await this.parser.getPublishedNotes();
       console.log("Published notes found:", notes.length);
       console.log(notes);

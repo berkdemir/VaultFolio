@@ -1306,7 +1306,7 @@ body.vf-apple {
   background: #f5f5f7; color: #1d1d1f; font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 100px;
 }
 .vf-card-ap-link {
-  margin-top: auto; color: #0066cc; font-size: 17px; font-weight: 400;
+  margin-top: auto; color: #7C3AED; font-size: 17px; font-weight: 400;
 }
 .vf-card-ap-link:hover { text-decoration: underline; }
 
@@ -1346,7 +1346,7 @@ body.vf-apple {
 }
 .vf-prose-ap h2 { font-size: 32px; }
 .vf-prose-ap h3 { font-size: 24px; }
-.vf-prose-ap a { color: #0066cc; text-decoration: none; }
+.vf-prose-ap a { color: #7C3AED; text-decoration: none; }
 .vf-prose-ap a:hover { text-decoration: underline; }
 .vf-prose-ap pre, .vf-prose-ap code {
   background: #f5f5f7; color: #1d1d1f; border-radius: 8px; font-family: ui-monospace, Menlo, Monaco, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", "Oxygen Mono", "Ubuntu Monospace", "Source Code Pro", "Fira Mono", "Droid Sans Mono", "Courier New", monospace;
@@ -1363,7 +1363,7 @@ body.vf-apple {
 .vf-prose-ap hr { border: none; border-top: 1px solid #d2d2d7; margin: 3rem 0; }
 
 .vf-back-ap {
-  position: absolute; top: 16px; left: 40px; color: #0066cc; font-size: 14px; font-weight: 400; z-index: 200; display: flex; align-items: center;
+  position: absolute; top: 16px; left: 40px; color: #7C3AED; font-size: 14px; font-weight: 400; z-index: 200; display: flex; align-items: center;
 }
 .vf-back-ap:hover { text-decoration: underline; }
 ${CALLOUT_CSS}
@@ -1408,7 +1408,7 @@ function buildAppleIndex(notes: ParsedNote[], settings: VaultFolioSettings): Sit
 <nav class="vf-nav-ap">
   <div class="vf-nav-ap-logo">${escapeHtml(siteTitle)}</div>
   <div style="display:flex;gap:24px;align-items:center;">
-    ${settings.navLinks.split(",").map(entry => { const parts = entry.trim().split(":"); const label = parts[0].trim(); const rawHref = parts.slice(1).join(":").trim(); if (!label || !rawHref) return ""; const fullHref = normalizeNavHref(rawHref); const isExternal = /^https?:\/\//.test(fullHref); const targetAttr = isExternal ? ` target="_blank" rel="noopener noreferrer"` : ""; return `<a href="${escapeHtml(fullHref)}" style="color:#0066cc; font-size:14px; font-weight:400;"${targetAttr}>${escapeHtml(label)}</a>`; }).filter(Boolean).join("\n    ")}
+    ${settings.navLinks.split(",").map(entry => { const parts = entry.trim().split(":"); const label = parts[0].trim(); const rawHref = parts.slice(1).join(":").trim(); if (!label || !rawHref) return ""; const fullHref = normalizeNavHref(rawHref); const isExternal = /^https?:\/\//.test(fullHref); const targetAttr = isExternal ? ` target="_blank" rel="noopener noreferrer"` : ""; return `<a href="${escapeHtml(fullHref)}" style="color:#7C3AED; font-size:14px; font-weight:400;"${targetAttr}>${escapeHtml(label)}</a>`; }).filter(Boolean).join("\n    ")}
   </div>
 </nav>
 

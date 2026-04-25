@@ -7,6 +7,7 @@ export const SIDEBAR_VIEW_TYPE = "vaultfolio-sidebar";
 export class VaultFolioSidebarView extends ItemView {
   plugin: VaultFolioPlugin;
   private notes: PublishedNote[] = [];
+  private isLoading = false;
 
   constructor(leaf: WorkspaceLeaf, plugin: VaultFolioPlugin) {
     super(leaf);
@@ -26,6 +27,8 @@ export class VaultFolioSidebarView extends ItemView {
   }
 
   async onOpen(): Promise<void> {
+    this.isLoading = true;
+    this.render();
     await this.refresh(false);
   }
 
@@ -36,7 +39,9 @@ export class VaultFolioSidebarView extends ItemView {
   // ── Data ──────────────────────────────────────────────────────────────────
 
   private async refresh(notify: boolean): Promise<void> {
+    this.isLoading = true;
     this.notes = await this.plugin.parser.getPublishedNotes();
+    this.isLoading = false;
     this.render();
     if (notify) {
       new Notice(`Refreshed. ${this.notes.length} note${this.notes.length === 1 ? "" : "s"} found.`);
@@ -56,9 +61,11 @@ export class VaultFolioSidebarView extends ItemView {
   }
 
   private renderHeader(root: HTMLElement): void {
+    // Row 1: title + refresh button
     const header = root.createDiv({ cls: "vaultfolio-header" });
 
-    header.createEl("span", { text: "VaultFolio", cls: "vaultfolio-title" });
+    const titleEl = header.createEl("span", { cls: "vaultfolio-title" });
+    titleEl.innerHTML = 'VAULT<span style="color:#FF4D00">FOLIO</span>';
 
     const refreshBtn = header.createEl("button", {
       cls: "vaultfolio-icon-btn",
@@ -75,15 +82,32 @@ export class VaultFolioSidebarView extends ItemView {
       await this.refresh(true);
       refreshBtn.removeClass("vaultfolio-spinning");
     });
+
+    // Row 2: published badge on its own line
+    if (!this.isLoading) {
+      const statsRow = root.createDiv({ cls: "vaultfolio-stats-row" });
+      statsRow.createSpan({
+        cls: "vaultfolio-note-count-badge",
+        text: `${this.notes.length} published`,
+      });
+    }
   }
 
   private renderNoteList(root: HTMLElement): void {
     const container = root.createDiv({ cls: "vaultfolio-note-list" });
 
+    if (this.isLoading) {
+      container.createDiv({ cls: "vaultfolio-loading", text: "Scanning vault…" });
+      return;
+    }
+
     if (this.notes.length === 0) {
-      container.createDiv({
-        cls: "vaultfolio-empty",
-        text: "No published notes found. Add published: true to any note in your portfolio folder.",
+      const empty = container.createDiv({ cls: "vaultfolio-empty" });
+      empty.createDiv({ cls: "vaultfolio-empty-icon", text: "📝" });
+      empty.createDiv({ cls: "vaultfolio-empty-title", text: "No published notes yet" });
+      empty.createDiv({
+        cls: "vaultfolio-empty-sub",
+        text: "Add published: true to any note in your portfolio folder",
       });
       return;
     }
@@ -107,7 +131,7 @@ export class VaultFolioSidebarView extends ItemView {
     if (Array.isArray(tags) && tags.length > 0) {
       const tagRow = card.createDiv({ cls: "vaultfolio-tag-row" });
       for (const tag of tags) {
-        tagRow.createSpan({ cls: "vaultfolio-tag", text: String(tag) });
+        tagRow.createSpan({ cls: "vaultfolio-tag", text: String(tag).toLowerCase() });
       }
     }
   }
@@ -127,37 +151,55 @@ export class VaultFolioSidebarView extends ItemView {
 
     buildBtn.addEventListener("click", async () => {
       buildBtn.disabled = true;
+      deployBtn.disabled = true;
       buildBtn.setText("Building…");
       try {
         const result = await this.plugin.buildSite();
-        new Notice(`Site built. ${result.pageCount} page${result.pageCount === 1 ? "" : "s"} generated.`);
+        new Notice(
+          `✅ Site built successfully — ${result.pageCount} page${result.pageCount === 1 ? "" : "s"} generated`
+        );
       } catch (err) {
-        new Notice(`VaultFolio build error: ${err instanceof Error ? err.message : String(err)}`);
+        new Notice(
+          `❌ Build failed — ${err instanceof Error ? err.message : "check your portfolio folder"}`
+        );
       } finally {
         buildBtn.disabled = false;
+        deployBtn.disabled = false;
         buildBtn.setText("Build Site");
       }
     });
 
     deployBtn.addEventListener("click", async () => {
+      buildBtn.disabled = true;
       deployBtn.disabled = true;
       try {
         deployBtn.setText("Building…");
-        new Notice("Building site…");
         const buildResult = await this.plugin.buildSite();
 
         deployBtn.setText("Deploying…");
-        new Notice("Deploying to GitHub…");
         const result = await this.plugin.deployFiles(buildResult.files, buildResult.imageMap);
 
         if (result.success) {
-          new Notice(`Deployed! View at ${result.url ?? result.message}`);
+          new Notice(`🚀 Deployed! Visit: ${result.url ?? result.message}`);
         } else {
-          new Notice(`Deploy failed: ${result.message}`);
+          const msg = result.message;
+          if (msg.includes("Invalid GitHub token") || msg.includes("401")) {
+            new Notice("❌ Invalid GitHub token — regenerate in GitHub settings");
+          } else {
+            new Notice("❌ Deploy failed — check your GitHub token and repo");
+          }
         }
       } catch (err) {
-        new Notice(`VaultFolio error: ${err instanceof Error ? err.message : String(err)}`);
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.toLowerCase().includes("fetch") || msg.toLowerCase().includes("network")) {
+          new Notice("❌ Network error — check your connection");
+        } else if (msg.includes("token") || msg.includes("401")) {
+          new Notice("❌ Invalid GitHub token — regenerate in GitHub settings");
+        } else {
+          new Notice(`❌ Deploy failed — ${msg}`);
+        }
       } finally {
+        buildBtn.disabled = false;
         deployBtn.disabled = false;
         deployBtn.setText("Deploy to GitHub");
       }

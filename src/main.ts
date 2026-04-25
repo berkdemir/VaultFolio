@@ -43,8 +43,16 @@ export default class VaultFolioPlugin extends Plugin {
       id: "build-site",
       name: "Build site",
       callback: async () => {
-        const result = await this.buildSite();
-        new Notice(`VaultFolio: built ${result.pageCount} page(s).`);
+        try {
+          const result = await this.buildSite();
+          new Notice(
+            `✅ Site built successfully — ${result.pageCount} page${result.pageCount === 1 ? "" : "s"} generated`
+          );
+        } catch (err) {
+          new Notice(
+            `❌ Build failed — ${err instanceof Error ? err.message : "check your portfolio folder"}`
+          );
+        }
       },
     });
 
@@ -52,13 +60,34 @@ export default class VaultFolioPlugin extends Plugin {
       id: "deploy-site",
       name: "Deploy to GitHub Pages",
       callback: async () => {
-        const result = await this.deploy();
-        new Notice(`VaultFolio: ${result.message}`);
+        try {
+          const result = await this.deploy();
+          if (result.success) {
+            new Notice(`🚀 Deployed! Visit: ${result.url ?? result.message}`);
+          } else {
+            const msg = result.message;
+            if (msg.includes("Invalid GitHub token") || msg.includes("401")) {
+              new Notice("❌ Invalid GitHub token — regenerate in GitHub settings");
+            } else {
+              new Notice("❌ Deploy failed — check your GitHub token and repo");
+            }
+          }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg.toLowerCase().includes("fetch") || msg.toLowerCase().includes("network")) {
+            new Notice("❌ Network error — check your connection");
+          } else {
+            new Notice(`❌ Deploy failed — ${msg}`);
+          }
+        }
       },
     });
 
     // Defer until metadataCache is fully populated, then parse
     this.app.workspace.onLayoutReady(async () => {
+      if (!this.settings.githubRepo) {
+        new Notice("👋 Welcome to VaultFolio! Go to Settings → VaultFolio to get started.");
+      }
       const notes = await this.parser.getPublishedNotes();
       console.log("Published notes found:", notes.length);
       console.log(notes);

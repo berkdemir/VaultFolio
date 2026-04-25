@@ -65,32 +65,82 @@
   gap: 0.4rem;
 }
 
-.vaultfolio-empty {
-  padding: 1.5rem 0.5rem;
+.vaultfolio-stats-row {
+  padding: 0 1rem 0 2rem;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.vaultfolio-note-count-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: var(--background-modifier-hover);
+  color: var(--text-accent);
+  border: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.vaultfolio-loading {
+  padding: 2rem 0.5rem;
   color: var(--text-muted);
   font-size: 0.85rem;
-  line-height: 1.5;
   text-align: center;
 }
 
+.vaultfolio-empty {
+  padding: 2rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+
+.vaultfolio-empty-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.vaultfolio-empty-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.vaultfolio-empty-sub {
+  font-size: 0.8rem;
+  color: var(--text-faint);
+  line-height: 1.5;
+  max-width: 200px;
+}
+
 .vaultfolio-note-card {
-  padding: 0.55rem 0.65rem;
-  border-radius: 6px;
-  background-color: var(--background-secondary);
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 .vaultfolio-note-card:hover {
-  background-color: var(--background-modifier-hover);
+  background: var(--background-modifier-hover);
 }
 
 .vaultfolio-note-title {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-normal);
-  font-size: 0.875rem;
+  font-size: 14px;
+  margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -109,12 +159,17 @@
 }
 
 .vaultfolio-tag {
-  font-size: 0.7rem;
-  padding: 0.1rem 0.45rem;
-  border-radius: 999px;
-  background-color: var(--tag-background);
-  color: var(--tag-color);
-  border: 1px solid var(--tag-border-color);
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  background: var(--background-modifier-hover);
+  color: var(--text-accent);
+  border: 1px solid var(--background-modifier-border);
 }
 
 /* ── Footer ──────────────────────────────────────────────────────────────── */
@@ -130,12 +185,13 @@
 
 .vaultfolio-btn {
   width: 100%;
-  padding: 0.45rem 1rem;
-  border-radius: 5px;
+  padding: 10px 0;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 13px;
   font-weight: 500;
   border: none;
+  margin-bottom: 8px;
   transition: opacity 0.15s ease;
 }
 
@@ -145,21 +201,27 @@
 }
 
 .vaultfolio-btn-primary {
-  background-color: var(--interactive-accent);
+  background: var(--interactive-accent);
   color: var(--text-on-accent);
 }
 
 .vaultfolio-btn-primary:hover:not(:disabled) {
-  background-color: var(--interactive-accent-hover);
+  opacity: 0.85;
 }
 
 .vaultfolio-btn-secondary {
-  background-color: var(--background-modifier-border);
-  color: var(--text-normal);
+  background: var(--interactive-accent-hover);
+  color: var(--text-on-accent);
 }
 
 .vaultfolio-btn-secondary:hover:not(:disabled) {
-  background-color: var(--background-modifier-border-hover);
+  opacity: 0.85;
+}
+
+/* ── Ribbon icon ─────────────────────────────────────────────────────────── */
+
+.side-dock-ribbon-action[aria-label="VaultFolio"] {
+  color: var(--interactive-accent);
 }
 
 /* ── Legacy (kept for settings tab) ─────────────────────────────────────── */
