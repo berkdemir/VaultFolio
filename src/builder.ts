@@ -16,6 +16,33 @@ export interface BuildResult {
 
 const CARD_COLORS = ["#1A1A2E", "#16213E", "#1B1B2F", "#0F3460", "#1C1C1E", "#2D1B69"];
 
+// ── Callout support (shared across all themes) ────────────────────────────────
+
+const CALLOUT_ICONS: Record<string, string> = {
+  note: "📝", info: "ℹ️", tip: "💡", warning: "⚠️", danger: "🔴",
+  question: "❓", success: "✅", failure: "❌", bug: "🐛",
+  example: "📋", quote: "💬", abstract: "📄",
+};
+
+const CALLOUT_CSS = `
+.callout { border-radius: 6px; padding: 12px 16px; margin: 16px 0; border-left: 4px solid; }
+.callout-title { display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+.callout-icon { font-size: 16px; line-height: 1; }
+.callout-content { font-size: 14px; line-height: 1.6; }
+.callout-note     { background: #f0f4ff; border-color: #3b82f6; color: #1e3a8a; }
+.callout-info     { background: #f0f9ff; border-color: #0ea5e9; color: #0c4a6e; }
+.callout-tip      { background: #f0fdf4; border-color: #22c55e; color: #14532d; }
+.callout-warning  { background: #fffbeb; border-color: #f59e0b; color: #78350f; }
+.callout-danger   { background: #fff1f2; border-color: #ef4444; color: #7f1d1d; }
+.callout-question { background: #faf5ff; border-color: #a855f7; color: #4a1d96; }
+.callout-success  { background: #f0fdf4; border-color: #22c55e; color: #14532d; }
+.callout-failure  { background: #fff1f2; border-color: #ef4444; color: #7f1d1d; }
+.callout-bug      { background: #fff1f2; border-color: #ef4444; color: #7f1d1d; }
+.callout-example  { background: #f8fafc; border-color: #64748b; color: #1e293b; }
+.callout-quote    { background: #f8fafc; border-color: #64748b; color: #1e293b; }
+.callout-abstract { background: #f0f9ff; border-color: #0ea5e9; color: #0c4a6e; }
+`.trim();
+
 // ── Base CSS ──────────────────────────────────────────────────────────────────
 
 const BASE_CSS = `
@@ -427,6 +454,7 @@ img { max-width: 100%; height: auto; display: block; }
   .vf-project-content { padding: 60px 24px 80px; }
   .vf-prose p, .vf-prose li { font-size: 16px; }
 }
+${CALLOUT_CSS}
 `.trim();
 
 // ── Shared fragments ──────────────────────────────────────────────────────────
@@ -713,7 +741,7 @@ ${renderFooter(siteTitle)}
 // ── Markdown → HTML ───────────────────────────────────────────────────────────
 
 function markdownToHtml(md: string): string {
-  let html = md
+  let html = parseCallouts(md)
     .replace(/^#{6}\s+(.+)$/gm, "<h6>$1</h6>")
     .replace(/^#{5}\s+(.+)$/gm, "<h5>$1</h5>")
     .replace(/^#{4}\s+(.+)$/gm, "<h4>$1</h4>")
@@ -788,6 +816,53 @@ function escapeHtml(str: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function applyInlineMd(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
+}
+
+function parseCallouts(md: string): string {
+  const lines = md.split("\n");
+  const out: string[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const match = lines[i].match(/^>\s*\[!([\w]+)\]\s*(.*)/);
+    if (match) {
+      const type = match[1].toLowerCase();
+      const title = match[2].trim() || type.charAt(0).toUpperCase() + type.slice(1);
+
+      const contentLines: string[] = [];
+      i++;
+      while (i < lines.length && /^>\s?/.test(lines[i])) {
+        contentLines.push(lines[i].replace(/^>\s?/, ""));
+        i++;
+      }
+
+      const icon = CALLOUT_ICONS[type] ?? "📝";
+      const contentHtml = contentLines.map(applyInlineMd).join("<br>");
+
+      out.push(
+        `<div class="callout callout-${escapeHtml(type)}">` +
+        `<div class="callout-title">` +
+        `<span class="callout-icon">${icon}</span>` +
+        `<span class="callout-title-text">${escapeHtml(title)}</span>` +
+        `</div>` +
+        `<div class="callout-content">${contentHtml}</div>` +
+        `</div>`
+      );
+    } else {
+      out.push(lines[i]);
+      i++;
+    }
+  }
+
+  return out.join("\n");
 }
 
 // ── EDITORIAL THEME ──────────────────────────────────────────────────────────
@@ -1019,6 +1094,7 @@ body.vf-editorial {
   .vf-page-ed-title { font-size: 48px; }
   .vf-nav-ed-left, .vf-nav-ed-right { display: none; }
 }
+${CALLOUT_CSS}
 `;
 
 const ED_COLORS = ["#F5F4EF", "#E8E4DC", "#1A1A1A", "#F0EBE0"];
@@ -1290,6 +1366,7 @@ body.vf-apple {
   position: absolute; top: 16px; left: 40px; color: #0066cc; font-size: 14px; font-weight: 400; z-index: 200; display: flex; align-items: center;
 }
 .vf-back-ap:hover { text-decoration: underline; }
+${CALLOUT_CSS}
 `;
 
 function buildAppleIndex(notes: ParsedNote[], settings: VaultFolioSettings): SiteFile {
@@ -1565,6 +1642,7 @@ body.vf-swiss {
   .vf-nav-sw, .vf-footer-sw { padding: 24px; }
   .vf-hero-sw, .vf-quote-sw, .vf-page-sw-header { padding: 80px 24px; }
 }
+${CALLOUT_CSS}
 `;
 
 function buildSwissIndex(notes: ParsedNote[], settings: VaultFolioSettings): SiteFile {
@@ -1785,6 +1863,7 @@ img { max-width: 100%; height: auto; display: block; }
   .sp-page-header { padding: 20px 20px 16px; }
   .sp-page-content { padding: 20px 20px 60px; }
 }
+${CALLOUT_CSS}
 `.trim();
 
 function buildSimpleIndex(notes: ParsedNote[], siteTitle: string): SiteFile {
