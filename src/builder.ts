@@ -532,6 +532,9 @@ export function buildSite(notes: ParsedNote[], settings: VaultFolioSettings): Bu
   } else if (theme === "swiss") {
     pages = notes.map((note) => buildSwissPage(note, siteTitle));
     index = buildSwissIndex(notes, settings);
+  } else if (theme === "simple") {
+    pages = notes.map((note) => buildSimplePage(note, siteTitle));
+    index = buildSimpleIndex(notes, siteTitle);
   } else {
     pages = notes.map((note) => buildPage(note, siteTitle));
     index = buildIndex(notes, settings);
@@ -1669,5 +1672,213 @@ function buildSwissPage(note: ParsedNote, siteTitle: string): SiteFile {
 
 </body>
 </html>`;
+  return { path: `pages/${note.slug}.html`, content: html };
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// THEME: SIMPLE
+// ════════════════════════════════════════════════════════════════════════════
+
+const SIMPLE_CSS = `
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #ffffff;
+  color: #1a1a1a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+a { color: #1a1a1a; text-decoration: none; }
+img { max-width: 100%; height: auto; display: block; }
+
+/* Nav */
+.sp-nav {
+  padding: 20px 40px;
+  border-bottom: 1px solid #eee;
+}
+.sp-nav-logo { font-size: 16px; font-weight: 600; }
+
+/* Hero */
+.sp-hero {
+  padding: 60px 40px 48px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.sp-hero h1 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+.sp-hero p { font-size: 16px; color: #555; }
+
+/* Projects */
+.sp-section { max-width: 800px; margin: 0 auto; padding: 0 40px 80px; }
+.sp-section-heading {
+  font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: #999; margin-bottom: 24px;
+}
+.sp-cards { display: flex; flex-direction: column; gap: 16px; }
+.sp-card {
+  display: block;
+  border: 1px solid #eee;
+  padding: 24px;
+  color: #1a1a1a;
+}
+.sp-card-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+.sp-card-desc { font-size: 14px; color: #555; margin-bottom: 12px; }
+.sp-card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.sp-tag {
+  font-size: 12px; color: #777;
+  padding: 2px 8px;
+  border: 1px solid #ddd;
+}
+.sp-empty { font-size: 15px; color: #999; padding: 24px 0; }
+
+/* Footer */
+.sp-footer {
+  border-top: 1px solid #eee;
+  padding: 32px 40px;
+  text-align: center;
+  font-size: 13px;
+  color: #999;
+}
+
+/* Project page */
+.sp-back {
+  display: inline-block;
+  padding: 24px 40px 0;
+  font-size: 14px;
+  color: #555;
+}
+.sp-page-header { max-width: 800px; margin: 0 auto; padding: 32px 40px 24px; }
+.sp-page-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+.sp-page-date { font-size: 13px; color: #999; margin-bottom: 12px; }
+.sp-page-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0; }
+.sp-page-tag {
+  font-size: 12px; color: #777;
+  padding: 2px 8px;
+  border: 1px solid #ddd;
+}
+.sp-page-content { max-width: 800px; margin: 0 auto; padding: 32px 40px 80px; }
+
+/* Prose */
+.sp-prose h1 { font-size: 26px; font-weight: 700; margin: 2rem 0 0.8rem; }
+.sp-prose h2 { font-size: 22px; font-weight: 700; margin: 2rem 0 0.8rem; }
+.sp-prose h3 { font-size: 18px; font-weight: 600; margin: 1.5rem 0 0.6rem; }
+.sp-prose h4, .sp-prose h5, .sp-prose h6 { font-size: 16px; font-weight: 600; margin: 1.2rem 0 0.5rem; }
+.sp-prose p { font-size: 16px; line-height: 1.8; color: #333; margin: 1rem 0; }
+.sp-prose a { color: #1a1a1a; text-decoration: underline; }
+.sp-prose strong { font-weight: 600; }
+.sp-prose em { font-style: italic; }
+.sp-prose ul { list-style: disc; padding-left: 1.5rem; margin: 0.8rem 0; }
+.sp-prose ol { list-style: decimal; padding-left: 1.5rem; margin: 0.8rem 0; }
+.sp-prose li { font-size: 16px; line-height: 1.8; color: #333; margin: 0.3rem 0; }
+.sp-prose code { background: #f5f5f5; padding: 1px 5px; font-size: 0.875em; font-family: 'SF Mono', Consolas, monospace; }
+.sp-prose pre { background: #f5f5f5; padding: 20px; overflow-x: auto; margin: 1.5rem 0; }
+.sp-prose pre code { background: none; padding: 0; }
+.sp-prose blockquote { border-left: 3px solid #ddd; padding-left: 16px; color: #666; font-style: italic; margin: 1.5rem 0; }
+.sp-prose hr { border: none; border-top: 1px solid #eee; margin: 2rem 0; }
+.sp-prose img { width: 100%; margin: 1.5rem 0; }
+
+@media (max-width: 640px) {
+  .sp-nav { padding: 16px 20px; }
+  .sp-hero { padding: 40px 20px 32px; }
+  .sp-section { padding: 0 20px 60px; }
+  .sp-card { padding: 18px; }
+  .sp-back { padding: 16px 20px 0; }
+  .sp-page-header { padding: 20px 20px 16px; }
+  .sp-page-content { padding: 20px 20px 60px; }
+}
+`.trim();
+
+function buildSimpleIndex(notes: ParsedNote[], siteTitle: string): SiteFile {
+  const cards = notes
+    .map((n) => {
+      const title = (n.frontmatter.title as string | undefined) ?? n.slug;
+      const desc  = (n.frontmatter.description as string | undefined) ?? "";
+      const tags  = Array.isArray(n.frontmatter.tags) ? (n.frontmatter.tags as string[]) : [];
+      const tagHtml = tags
+        .map((t) => `<span class="sp-tag">${escapeHtml(t)}</span>`)
+        .join("");
+      return `<a href="pages/${n.slug}.html" class="sp-card">
+  <div class="sp-card-title">${escapeHtml(title)}</div>
+  ${desc ? `<div class="sp-card-desc">${escapeHtml(desc)}</div>` : ""}
+  ${tags.length > 0 ? `<div class="sp-card-tags">${tagHtml}</div>` : ""}
+</a>`;
+    })
+    .join("\n");
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(siteTitle)}</title>
+  <style>${SIMPLE_CSS}</style>
+</head>
+<body>
+
+<nav class="sp-nav">
+  <a href="index.html" class="sp-nav-logo">${escapeHtml(siteTitle)}</a>
+</nav>
+
+<section class="sp-hero">
+  <h1>${escapeHtml(siteTitle)}</h1>
+  <p>A collection of selected work.</p>
+</section>
+
+<section class="sp-section">
+  <div class="sp-section-heading">Work</div>
+  ${notes.length > 0
+    ? `<div class="sp-cards">${cards}</div>`
+    : `<p class="sp-empty">No published projects yet.</p>`}
+</section>
+
+<footer class="sp-footer">
+  ${escapeHtml(siteTitle)} &mdash; Built with VaultFolio
+</footer>
+
+</body>
+</html>`;
+
+  return { path: "index.html", content: html };
+}
+
+function buildSimplePage(note: ParsedNote, siteTitle: string): SiteFile {
+  const title = (note.frontmatter.title as string | undefined) ?? note.slug;
+  const date  = note.frontmatter.date as string | undefined;
+  const tags  = Array.isArray(note.frontmatter.tags) ? (note.frontmatter.tags as string[]) : [];
+
+  const tagHtml = tags
+    .map((t) => `<span class="sp-page-tag">${escapeHtml(String(t))}</span>`)
+    .join("");
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(title)} — ${escapeHtml(siteTitle)}</title>
+  <style>${SIMPLE_CSS}</style>
+</head>
+<body>
+
+<a href="../index.html" class="sp-back">&larr; Back</a>
+
+<div class="sp-page-header">
+  <h1>${escapeHtml(title)}</h1>
+  ${date ? `<div class="sp-page-date">${escapeHtml(String(date))}</div>` : ""}
+  ${tags.length > 0 ? `<div class="sp-page-tags">${tagHtml}</div>` : ""}
+</div>
+
+<div class="sp-page-content">
+  <div class="sp-prose">
+    ${markdownToHtml(note.body)}
+  </div>
+</div>
+
+<footer class="sp-footer">
+  ${escapeHtml(siteTitle)} &mdash; Built with VaultFolio
+</footer>
+
+</body>
+</html>`;
+
   return { path: `pages/${note.slug}.html`, content: html };
 }
